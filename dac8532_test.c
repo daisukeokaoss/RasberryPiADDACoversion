@@ -4,12 +4,12 @@
  *	the port to be looped back to itself
  *
  */
- 
+
 /*
-             define from bcm2835.h                       define from Board 
+             define from bcm2835.h                       define from Board
 DVK511
                  3.3V | | 5V               ->                 3.3V | | 5V
-    RPI_V2_GPIO_P1_03 | | 5V               ->                  SDA | | 5V 
+    RPI_V2_GPIO_P1_03 | | 5V               ->                  SDA | | 5V
     RPI_V2_GPIO_P1_05 | | GND              ->                  SCL | | GND
        RPI_GPIO_P1_07 | | RPI_GPIO_P1_08   ->                  IO7 | | TX
                   GND | | RPI_GPIO_P1_10   ->                  GND | | RX
@@ -29,14 +29,14 @@ RPI_V2_GPIO_P1_13->RPI_GPIO_P1_13
 ::
 */
 
-#include <bcm2835.h>  
+#include <bcm2835.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <string.h>
 #include <math.h>
 #include <errno.h>
 
-//CS      -----   SPICS  
+//CS      -----   SPICS
 //DIN     -----   MOSI
 //DOUT  -----   MISO
 //SCLK   -----   SCLK
@@ -53,11 +53,11 @@ RPI_V2_GPIO_P1_13->RPI_GPIO_P1_13
 
 /* Unsigned integer types  */
 #define uint8_t unsigned char
-#define uint16_t unsigned short    
+#define uint16_t unsigned short
 
 #define channel_A   0x30
 #define channel_B   0x34
-	  	
+
 void  bsp_DelayUS(uint64_t micros);
 void Write_DAC8532(uint8_t channel, uint16_t Data);
 uint16_t Voltage_Convert(float Vref, float voltage);
@@ -77,7 +77,7 @@ void Write_DAC8532(uint8_t channel, uint16_t Data)
 	 CS_0() ;
       bcm2835_spi_transfer(channel);
       bcm2835_spi_transfer((Data>>8));
-      bcm2835_spi_transfer((Data&0xff));  
+      bcm2835_spi_transfer((Data&0xff));
       CS_1() ;
 }
 
@@ -85,13 +85,13 @@ uint16_t Voltage_Convert(float Vref, float voltage)
 {
 	uint16_t _D_;
 	_D_ = (uint16_t)(65536 * voltage / Vref);
-    
+
 	return _D_;
 }
 int  main()
 {
    uint16_t   i,tmp;
-   
+
 	if (!bcm2835_init())
         return 1;
     bcm2835_spi_begin();
@@ -99,16 +99,16 @@ int  main()
     bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                   // The default;
     bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024); // The default
     bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP);//
-    bcm2835_gpio_write(SPICS, HIGH); 	
+    bcm2835_gpio_write(SPICS, HIGH);
 
     i = 0;
     tmp=0;
    while(1)
-   {       
+   {
      if(tmp==0)
      	{
      			Write_DAC8532(0x30, Voltage_Convert(5.0,0.00+(float)i/10));    	//Write channel A buffer (0x30)
-    			Write_DAC8532(0x34, Voltage_Convert(5.0,5.000-(float)i/10));    	//Write channel B buffer (0x34)		
+    			Write_DAC8532(0x34, Voltage_Convert(5.0,5.000-(float)i/10));    	//Write channel B buffer (0x34)
     			i++;
 			if(i==50)
 			{
@@ -119,13 +119,13 @@ int  main()
      	}
    else if(tmp==1)
    {
-			Write_DAC8532(0x30, Voltage_Convert(5.0,5.000-(float)i/10));    	//Write channel B buffer (0x30)	
+			Write_DAC8532(0x30, Voltage_Convert(5.0,5.000-(float)i/10));    	//Write channel B buffer (0x30)
 			Write_DAC8532(0x34, Voltage_Convert(5.0,0.00+(float)i/10));    	//Write channel A buffer (0x34)
-    				
+
     			i++;
 			if(i==50)
 			{
-				i=0;  
+				i=0;
 			       tmp=0;
 			}
 			bsp_DelayUS(5);
@@ -133,6 +133,16 @@ int  main()
    }
     bcm2835_spi_end();
     bcm2835_close();
-	
+
     return 0;
+}
+
+void trueGenerate()
+{
+
+}
+
+void falseGenerate()
+{
+
 }
