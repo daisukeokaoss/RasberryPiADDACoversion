@@ -63,6 +63,11 @@ void Write_DAC8532(uint8_t channel, uint16_t Data);
 uint16_t Voltage_Convert(float Vref, float voltage);
 
 
+///////////////////////////////////////////////////////////////////
+//setting parameter
+float trueFrequency = 10000;//Micro Second
+
+
 void  bsp_DelayUS(uint64_t micros)
 {
 		bcm2835_delayMicroseconds (micros);
@@ -88,7 +93,15 @@ uint16_t Voltage_Convert(float Vref, float voltage)
 
 	return _D_;
 }
-int  main()
+int main()
+{
+  trueGenerate_ChannelA()
+}
+
+
+
+
+int  main_old()
 {
    uint16_t   i,tmp;
 
@@ -137,12 +150,58 @@ int  main()
     return 0;
 }
 
-void trueGenerate()
+void trueGenerate_ChannelA()
 {
+  uint16_t   i,tmp;
 
+ if (!bcm2835_init())
+       return 1;
+   bcm2835_spi_begin();
+   bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_LSBFIRST );      // The default
+   bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                   // The default;
+   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024); // The default
+   bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP);//
+   bcm2835_gpio_write(SPICS, HIGH);
+
+   i = 0;
+   tmp=0;
+   double currentPhase = 0.0;
+   double phaseStep = (2 * M_PI)/trueFrequency;
+  while(1)
+  {
+    u_int16 voltage = u_int16(sin(currentPhase)*(2**15) + 2**15);
+    Write_DAC8532(channel_A, voltage);
+
+  }
+   bcm2835_spi_end();
+   bcm2835_close();
+
+   return 0;
 }
 
 void falseGenerate()
 {
+  uint16_t   i,tmp;
 
+ if (!bcm2835_init())
+       return 1;
+   bcm2835_spi_begin();
+   bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_LSBFIRST );      // The default
+   bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                   // The default;
+   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024); // The default
+   bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP);//
+   bcm2835_gpio_write(SPICS, HIGH);
+
+   i = 0;
+   tmp=0;
+   int phase = 0;
+   float TrueFrequency = 10000;//Micro Second
+  while(1)
+  {
+
+  }
+   bcm2835_spi_end();
+   bcm2835_close();
+
+   return 0;
 }
