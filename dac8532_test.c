@@ -61,11 +61,14 @@ RPI_V2_GPIO_P1_13->RPI_GPIO_P1_13
 void  bsp_DelayUS(uint64_t micros);
 void Write_DAC8532(uint8_t channel, uint16_t Data);
 uint16_t Voltage_Convert(float Vref, float voltage);
+int trueGenerate_ChannelA();
+int falseGenerate_ChannelA();
 
 
 ///////////////////////////////////////////////////////////////////
 //setting parameter
-float trueFrequency = 10000;//Micro Second
+#define TRUEFREQUENCY 100  //Micro Second
+
 
 
 void  bsp_DelayUS(uint64_t micros)
@@ -95,7 +98,8 @@ uint16_t Voltage_Convert(float Vref, float voltage)
 }
 int main()
 {
-  trueGenerate_ChannelA()
+  return trueGenerate_ChannelA();
+
 }
 
 
@@ -150,9 +154,17 @@ int  main_old()
     return 0;
 }
 
-void trueGenerate_ChannelA()
+int trueGenerate_ChannelA()
 {
   uint16_t   i,tmp;
+
+  uint16_t voltage[TRUEFREQUENCY];
+
+
+
+  for(int i=0;i<TRUEFREQUENCY;i++){
+    voltage[i] = (uint16_t)(sin(2*M_PI*i/TRUEFREQUENCY)*pow(2,15) + pow(2,15));
+  }
 
  if (!bcm2835_init())
        return 1;
@@ -166,11 +178,15 @@ void trueGenerate_ChannelA()
    i = 0;
    tmp=0;
    double currentPhase = 0.0;
-   double phaseStep = (2 * M_PI)/trueFrequency;
+   double phaseStep = (2 * M_PI)/TRUEFREQUENCY;
   while(1)
   {
-    u_int16 voltage = u_int16(sin(currentPhase)*(2**15) + 2**15);
-    Write_DAC8532(channel_A, voltage);
+    Write_DAC8532(channel_A, voltage[i]);
+    i++;
+    if(i>TRUEFREQUENCY){
+      i = 0;
+    }
+    //bsp_DelayUS(1);
 
   }
    bcm2835_spi_end();
@@ -179,7 +195,7 @@ void trueGenerate_ChannelA()
    return 0;
 }
 
-void falseGenerate()
+int falseGenerate_ChannelA()
 {
   uint16_t   i,tmp;
 
@@ -195,7 +211,6 @@ void falseGenerate()
    i = 0;
    tmp=0;
    int phase = 0;
-   float TrueFrequency = 10000;//Micro Second
   while(1)
   {
 
