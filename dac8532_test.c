@@ -199,6 +199,16 @@ int falseGenerate_ChannelA()
 {
   uint16_t   i,tmp;
 
+	uint16_t   i,tmp;
+
+  uint16_t voltage[TRUEFREQUENCY];
+
+
+
+  for(int i=0;i<TRUEFREQUENCY;i++){
+    voltage[i] = (uint16_t)(sin(2*M_PI*i/TRUEFREQUENCY)*pow(2,15) + pow(2,15));
+  }
+
  if (!bcm2835_init())
        return 1;
    bcm2835_spi_begin();
@@ -213,8 +223,13 @@ int falseGenerate_ChannelA()
    int phase = 0;
   while(1)
   {
-
-  }
+		Write_DAC8532(channel_A, voltage[i]);
+		bsp_DelayUS(1);
+    i++;
+    if(i>TRUEFREQUENCY){
+      i = 0;
+    }
+	}
    bcm2835_spi_end();
    bcm2835_close();
 
