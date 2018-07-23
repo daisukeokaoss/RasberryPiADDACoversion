@@ -35,6 +35,7 @@ RPI_V2_GPIO_P1_13->RPI_GPIO_P1_13
 #include <string.h>
 #include <math.h>
 #include <errno.h>
+#include <stdbool.h>
 
 //CS      -----   SPICS
 //DIN     -----   MOSI
@@ -63,11 +64,13 @@ void Write_DAC8532(uint8_t channel, uint16_t Data);
 uint16_t Voltage_Convert(float Vref, float voltage);
 int trueGenerate_ChannelA();
 int falseGenerate_ChannelA();
+int OneSecond_RectangularChannelA();
 
 
 ///////////////////////////////////////////////////////////////////
 //setting parameter
-#define TRUEFREQUENCY 100  //Micro Second
+#define TRUEWAVELENGTH 100  //Micro Second
+#define FALSEWAVELENGTH 50
 
 
 
@@ -98,8 +101,16 @@ uint16_t Voltage_Convert(float Vref, float voltage)
 }
 int main()
 {
-  return trueGenerate_ChannelA();
 
+//return OneSecond_RectangularChannelA();
+
+	bool Symbol = false;
+
+	if(Symbol == true){
+		return trueGenerate_ChannelA();
+	}else{
+		return falseGenerate_ChannelA();
+	}
 }
 
 
@@ -154,16 +165,53 @@ int  main_old()
     return 0;
 }
 
+int OneSecond_RectangularChannelA()
+{
+	uint16_t   i,tmp;
+
+  uint16_t voltage[TRUEWAVELENGTH];
+
+
+
+
+
+ if (!bcm2835_init())
+       return 1;
+   bcm2835_spi_begin();
+   bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_LSBFIRST );      // The default
+   bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                   // The default;
+   bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024); // The default
+   bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP);//
+   bcm2835_gpio_write(SPICS, HIGH);
+
+   i = 0;
+   tmp=0;
+   double currentPhase = 0.0;
+   double phaseStep = (2 * M_PI)/TRUEWAVELENGTH;
+  while(1)
+  {
+    Write_DAC8532(channel_A, (uint16_t)(pow(2,16)-1));
+    bsp_DelayUS(1000000);
+    Write_DAC8532(channel_A, (uint16_t)(0));
+    bsp_DelayUS(1000000);
+
+  }
+   bcm2835_spi_end();
+   bcm2835_close();
+
+   return 0;
+}
+
 int trueGenerate_ChannelA()
 {
   uint16_t   i,tmp;
 
-  uint16_t voltage[TRUEFREQUENCY];
+  uint16_t voltage[TRUEWAVELENGTH];
 
 
 
-  for(int i=0;i<TRUEFREQUENCY;i++){
-    voltage[i] = (uint16_t)(sin(2*M_PI*i/TRUEFREQUENCY)*pow(2,15) + pow(2,15));
+  for(int i=0;i<TRUEWAVELENGTH;i++){
+    voltage[i] = (uint16_t)(sin(2*M_PI*i/TRUEWAVELENGTH)*(pow(2,15)-1) + pow(2,15));
   }
 
  if (!bcm2835_init())
@@ -178,12 +226,12 @@ int trueGenerate_ChannelA()
    i = 0;
    tmp=0;
    double currentPhase = 0.0;
-   double phaseStep = (2 * M_PI)/TRUEFREQUENCY;
+   double phaseStep = (2 * M_PI)/TRUEWAVELENGTH;
   while(1)
   {
     Write_DAC8532(channel_A, voltage[i]);
     i++;
-    if(i>TRUEFREQUENCY){
+    if(i>TRUEWAVELENGTH){
       i = 0;
     }
     //bsp_DelayUS(1);
@@ -199,14 +247,12 @@ int falseGenerate_ChannelA()
 {
   uint16_t   i,tmp;
 
-	uint16_t   i,tmp;
-
-  uint16_t voltage[TRUEFREQUENCY];
+  uint16_t voltage[FALSEWAVELENGTH];
 
 
 
-  for(int i=0;i<TRUEFREQUENCY;i++){
-    voltage[i] = (uint16_t)(sin(2*M_PI*i/TRUEFREQUENCY)*pow(2,15) + pow(2,15));
+  for(int i=0;i<FALSEWAVELENGTH;i++){
+    voltage[i] = (uint16_t)(sin(2*M_PI*i/FALSEWAVELENGTH)*(pow(2,15)-1) + pow(2,15));
   }
 
  if (!bcm2835_init())
@@ -224,9 +270,8 @@ int falseGenerate_ChannelA()
   while(1)
   {
 		Write_DAC8532(channel_A, voltage[i]);
-		bsp_DelayUS(1);
     i++;
-    if(i>TRUEFREQUENCY){
+    if(i>FALSEWAVELENGTH){
       i = 0;
     }
 	}
