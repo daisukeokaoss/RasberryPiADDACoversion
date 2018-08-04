@@ -69,8 +69,8 @@ int OneSecond_RectangularChannelA();
 
 ///////////////////////////////////////////////////////////////////
 //setting parameter
-#define TRUEWAVELENGTH 100  //Micro Second
-#define FALSEWAVELENGTH 50
+#define TRUEWAVELENGTH 50  //Micro Second
+#define FALSEWAVELENGTH 25
 
 
 
@@ -104,12 +104,12 @@ int main()
 
 //return OneSecond_RectangularChannelA();
 
-	bool Symbol = false;
-
-	if(Symbol == true){
-		return trueGenerate_ChannelA();
-	}else{
+	printf("Input 0 or 1");
+	int input = getchar();
+	if(input == '0'){
 		return falseGenerate_ChannelA();
+	}else{
+		return trueGenerate_ChannelA();
 	}
 }
 
