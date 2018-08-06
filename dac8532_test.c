@@ -104,13 +104,39 @@ int main()
 
 //return OneSecond_RectangularChannelA();
 
-	printf("Input 0 or 1");
+	printf("Input 0 or 1 (True = 1,False = 0)or other option 23456\n");
 	int input = getchar();
 	if(input == '0'){
 		return falseGenerate_ChannelA();
-	}else{
+	}else if(input == '1'){
 		return trueGenerate_ChannelA();
+	}else if(input == '2'){
+		return highGenerateChannel_A();
 	}
+}
+
+int highGenerateChannel_A()
+{
+	uint16_t   i,tmp;
+
+ if (!bcm2835_init())
+			 return 1;
+	 bcm2835_spi_begin();
+	 bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_LSBFIRST );      // The default
+	 bcm2835_spi_setDataMode(BCM2835_SPI_MODE1);                   // The default;
+	 bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_1024); // The default
+	 bcm2835_gpio_fsel(SPICS, BCM2835_GPIO_FSEL_OUTP);//
+	 bcm2835_gpio_write(SPICS, HIGH);
+
+	 while(1){
+		 Write_DAC8532(channel_A,pow(2,16)-1);
+		 Write_DAC8532(channel_A,pow(2,16)-1);
+	 }
+
+	 bcm2835_spi_end();
+	 bcm2835_close();
+
+	 return 0;
 }
 
 
